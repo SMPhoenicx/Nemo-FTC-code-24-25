@@ -109,6 +109,8 @@ public class MyOpMode extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         arm.setDirection(DcMotor.Direction.FORWARD);
+        rrm.setDirection(DcMotor.Direction.FORWARD);
+        lrm.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -170,22 +172,8 @@ public class MyOpMode extends LinearOpMode {
             rightFrontDrive.setPower(rightFrontPower);
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
-            if(rmPower > 0){
-                lrm.setDirection(DcMotor.Direction.FORWARD);
-                rrm.setDirection(DcMotor.Direction.REVERSE);
-            }
-            else{
-                lrm.setDirection(DcMotor.Direction.REVERSE);
-                rrm.setDirection(DcMotor.Direction.FORWARD);
-            }
             lrm.setPower(rmPower);
             rrm.setPower(rmPower);
-            if(armPower > 0){
-                arm.setDirection(DcMotor.Direction.FORWARD);
-            }
-            else{
-                arm.setDirection(DcMotor.Direction.REVERSE);
-            }
             arm.setPower(armPower);
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
