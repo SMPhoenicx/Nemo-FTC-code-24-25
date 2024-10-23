@@ -31,6 +31,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /*
@@ -72,6 +73,13 @@ public class MyOpMode extends LinearOpMode {
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
 
+    //landon asked me to code the following 3 motors (i don't know what they do)
+    private DcMotor rrm = null;
+
+    private DcMotor lrm = null;
+
+    private DcMotor arm = null;
+
     @Override
     public void runOpMode() {
 
@@ -81,6 +89,10 @@ public class MyOpMode extends LinearOpMode {
         leftBackDrive  = hardwareMap.get(DcMotor.class, "bl");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "fr");
         rightBackDrive = hardwareMap.get(DcMotor.class, "br");
+        rrm = hardwareMap.get(DcMotor.class, "rrm");
+        lrm = hardwareMap.get(DcMotor.class, "lrm");
+        arm = hardwareMap.get(DcMotor.class, "arm");
+
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -96,6 +108,7 @@ public class MyOpMode extends LinearOpMode {
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        arm.setDirection(DcMotor.Direction.FORWARD);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -119,6 +132,8 @@ public class MyOpMode extends LinearOpMode {
             double rightFrontPower = axial - lateral - yaw;
             double leftBackPower   = axial - lateral + yaw;
             double rightBackPower  = axial + lateral - yaw;
+            double rmPower = -gamepad2.left_stick_y;
+            double armPower = -gamepad2.right_stick_y;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -155,11 +170,28 @@ public class MyOpMode extends LinearOpMode {
             rightFrontDrive.setPower(rightFrontPower);
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
-
+            if(rmPower > 0){
+                lrm.setDirection(DcMotor.Direction.FORWARD);
+                rrm.setDirection(DcMotor.Direction.REVERSE);
+            }
+            else{
+                lrm.setDirection(DcMotor.Direction.REVERSE);
+                rrm.setDirection(DcMotor.Direction.FORWARD);
+            }
+            lrm.setPower(rmPower);
+            rrm.setPower(rmPower);
+            if(armPower > 0){
+                arm.setDirection(DcMotor.Direction.FORWARD);
+            }
+            else{
+                arm.setDirection(DcMotor.Direction.REVERSE);
+            }
+            arm.setPower(armPower);
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
+            telemetry.addData("RRM Power", "%4.2f", rmPower);
             telemetry.update();
         }
     }}
