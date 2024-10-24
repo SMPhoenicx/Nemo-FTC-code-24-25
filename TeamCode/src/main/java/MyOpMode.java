@@ -93,17 +93,10 @@ public class MyOpMode extends LinearOpMode {
         lrm = hardwareMap.get(DcMotor.class, "lrm");
         arm = hardwareMap.get(DcMotor.class, "arm");
 
+        //init arm motor encoder
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        // ########################################################################################
-        // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
-        // ########################################################################################
-        // Most robots need the motors on one side to be reversed to drive forward.
-        // The motor reversals shown here are for a "direct drive" robot (the wheels turn the same direction as the motor shaft)
-        // If your robot has additional gear reductions or uses a right-angled drive, it's important to ensure
-        // that your motors are turning in the correct direction.  So, start out with the reversals here, BUT
-        // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
-        // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
-        // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
+        //set motor directions
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -118,6 +111,17 @@ public class MyOpMode extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
+
+        int[] armPositions = new int[]{0, -79, -178, -212, -300};
+        int step = 0;
+        //input states
+        boolean lb2Pressed = false;
+        boolean rb2Pressed = false;
+
+        //for my pid code
+        double prevError = 0.0;
+        double integralError = 0.0;
+
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -137,6 +141,15 @@ public class MyOpMode extends LinearOpMode {
             double rmPower = -gamepad2.left_stick_y;
             double armPower = -gamepad2.right_stick_y;
 
+            //read arm encoder (higher sensitivity -> more change per joystick position)
+            //position = Math.max(Math.min(position + armPower * armSensitivity, 0),-705);
+            if(gamepad2.left_bumper && !lb2Pressed){step++;}
+            if(gamepad2.right_bumper && !rb2Pressed){step--;}
+            step = Math.min(Math.max(step, 0), armPositions.length-1);
+            int position = armPositions[step];
+            lb2Pressed = gamepad2.left_bumper;
+            rb2Pressed = gamepad2.right_bumper;
+
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
             max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
@@ -150,23 +163,6 @@ public class MyOpMode extends LinearOpMode {
                 rightBackPower  /= max;
             }
 
-            // This is test code:
-            //
-            // Uncomment the following code to test your motor directions.
-            // Each button should make the corresponding motor run FORWARD.
-            //   1) First get all the motors to take to correct positions on the robot
-            //      by adjusting your Robot Configuration if necessary.
-            //   2) Then make sure they run in the correct direction by modifying the
-            //      the setDirection() calls above.
-            // Once the correct motors move in the correct direction re-comment this code.
-
-            /*
-            leftFrontPower  = gamepad1.x ? 1.0 : 0.0;  // X gamepad
-            leftBackPower   = gamepad1.a ? 1.0 : 0.0;  // A gamepad
-            rightFrontPower = gamepad1.y ? 1.0 : 0.0;  // Y gamepad
-            rightBackPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
-            */
-
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
             rightFrontDrive.setPower(rightFrontPower);
@@ -174,12 +170,36 @@ public class MyOpMode extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
             lrm.setPower(rmPower);
             rrm.setPower(rmPower);
-            arm.setPower(armPower);
+
+            //my pid code (it's also quite mid)
+            arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            double kP = 0.007;
+            double kI = 0.0;
+            double kD = 0.002;
+
+            int currentPos = arm.getCurrentPosition();
+            double error = position - currentPos;
+            integralError += error;
+            double derivativeError = error - prevError;
+            double armOutput = Math.min(Math.max(kP * error + kI * integralError + kD * derivativeError, -1.0), 1.0);
+            prevError = error;
+
+            arm.setPower(armOutput);
+
+            //built-in PID control code for arm (it's quite mid)
+//            arm.setTargetPosition(position);
+//            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            arm.setPower(1.0);
+//
+//            int currentPos = arm.getCurrentPosition();
+
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.addData("RRM Power", "%4.2f", rmPower);
+            telemetry.addData("Current Position", currentPos);
+            telemetry.addData("Target Position", position);
             telemetry.update();
         }
     }}
