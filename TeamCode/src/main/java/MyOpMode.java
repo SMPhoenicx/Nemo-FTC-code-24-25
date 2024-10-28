@@ -120,8 +120,9 @@ public class MyOpMode extends LinearOpMode {
 
         //for my pid code
         double prevError = 0.0;
+        double prevDerivativeError = 0.0;
+        int prevPosition = armPositions[step];
         double integralError = 0.0;
-
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -176,13 +177,20 @@ public class MyOpMode extends LinearOpMode {
             double kP = 0.007;
             double kI = 0.0;
             double kD = 0.002;
+            double α=.8;
+            double maxIntegralError=100;
 
             int currentPos = arm.getCurrentPosition();
+            if(position!=prevPosition) integralError=0;//reset integral error for every new target position
             double error = position - currentPos;
             integralError += error;
+            integralError = Math.min(Math.max(integralError, -maxIntegralError), maxIntegralError);//prevent integral error from getting too high
             double derivativeError = error - prevError;
-            double armOutput = Math.min(Math.max(kP * error + kI * integralError + kD * derivativeError, -1.0), 1.0);
+            double filteredDerivativeError = α*derivativeError+(1-α)*prevDerivativeError;//IIR filter to smooth out spikes in derivative error
+            double armOutput = Math.min(Math.max(kP * error + kI * integralError + kD * filteredDerivativeError, -1.0), 1.0);
             prevError = error;
+            prevDerivativeError = filteredDerivativeError;
+            prevPosition = position;
 
             arm.setPower(armOutput);
 
