@@ -127,6 +127,7 @@ public class MyOpMode extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double max;
+            double threshold=0.01;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
@@ -141,6 +142,12 @@ public class MyOpMode extends LinearOpMode {
             double rightBackPower  = axial + lateral - yaw;
             double rmPower = -gamepad2.left_stick_y;
             double armPower = -gamepad2.right_stick_y;
+
+            //set values to 0 for very small joystick movements
+            if(leftFrontPower<threshold) leftFrontPower=0;
+            if(rightFrontPower<threshold) rightFrontPower=0;
+            if(leftBackPower<threshold) leftBackPower=0;
+            if(rightBackPower<threshold) rightBackPower=0;
 
             //read arm encoder (higher sensitivity -> more change per joystick position)
             //position = Math.max(Math.min(position + armPower * armSensitivity, 0),-705);
