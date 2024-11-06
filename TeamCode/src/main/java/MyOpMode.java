@@ -105,6 +105,9 @@ public class MyOpMode extends LinearOpMode {
         rrm.setDirection(DcMotor.Direction.FORWARD);
         lrm.setDirection(DcMotor.Direction.REVERSE);
 
+        //init zero power behavior
+        //arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -178,7 +181,7 @@ public class MyOpMode extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
             lrm.setPower(rmPower);
             rrm.setPower(rmPower);
-
+            //arm.setPower(armPower);
             //my pid code (it's also quite mid)
             arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             double kP = 0.007;
@@ -208,11 +211,13 @@ public class MyOpMode extends LinearOpMode {
 //
 //            int currentPos = arm.getCurrentPosition();
 
+
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.addData("RRM Power", "%4.2f", rmPower);
+            telemetry.addData("ARM Power", "%4.2f", armPower);
             telemetry.addData("Current Position", currentPos);
             telemetry.addData("Target Position", position);
             telemetry.update();
