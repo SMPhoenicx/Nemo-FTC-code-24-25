@@ -10,25 +10,22 @@ public class MeepMeepTesting {
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(800);
 
-        Pose2d blueCloseStartPose = new Pose2d(14,61,Math.toRadians(270));
-        Pose2d blueFarStartPose = new Pose2d(-36,61,Math.toRadians(270));
-        Pose2d redCloseStartPose = new Pose2d(14,-61,Math.toRadians(90));
-        Pose2d redFarStartPose = new Pose2d(-36,-61,Math.toRadians(90));
-
         Pose2d startPose=new Pose2d(-33,-62,Math.toRadians(180));
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(42, 30, 3, Math.toRadians(60), 16.05)
-                .setStartPose(startPose)
-                .followTrajectorySequence(drive ->
-                                drive.trajectorySequenceBuilder(startPose)
-                                        .splineToSplineHeading(redCloseStartPose)
-                                        .lineToConstantHeading(blueCloseStartPose)
-                                        .build());
+                .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
+                .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(0, 0, 0))
-                .splineTo(new Vector2d(10,20),Math.toRadians(180))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(23, -52, Math.toRadians(90)))
+                .splineTo(new Vector2d(0,-35),Math.toRadians(90))
+                //wait ant put speciamskdfjas;dlfkja onto the cage
+                .waitSeconds(2)
+                        .lineToYLinearHeading(-38,Math.toRadians(-90))
+                .splineTo(new Vector2d(48,-38),Math.toRadians(90))
+//                        .splineTo(new Vector2d(0,-35),Math.toRadians(-90))
+//                .splineTo(new Vector2d(Vector2d37.5,-25),Math.toRadians(0))
+                //do intake
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_JUICE_DARK)

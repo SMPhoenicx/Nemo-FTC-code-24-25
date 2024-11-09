@@ -1,4 +1,4 @@
-package trajectorysequence;
+package org.firstinspires.ftc.teamcode.trajectorysequence;
 
 import androidx.annotation.Nullable;
 
@@ -10,9 +10,9 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.drive.DriveSignal;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.profile.MotionState;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryMarker;
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -217,12 +217,12 @@ public class TrajectorySequenceRunner {
             );
         }
 
-        packet.put("x", poseEstimate.getX());
-        packet.put("y", poseEstimate.getY());
+        packet.put("x", poseEstimate.position.x);
+        packet.put("y", poseEstimate.position.y);
         packet.put("heading (deg)", Math.toDegrees(poseEstimate.getHeading()));
 
-        packet.put("xError", getLastPoseError().getX());
-        packet.put("yError", getLastPoseError().getY());
+        packet.put("xError", getLastPoseError().position.x);
+        packet.put("yError", getLastPoseError().position.y);
         packet.put("headingError (deg)", Math.toDegrees(getLastPoseError().getHeading()));
 
         draw(fieldOverlay, currentTrajectorySequence, currentSegment, targetPose, poseEstimate);

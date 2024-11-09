@@ -1,6 +1,6 @@
-package trajectorysequence;
+package org.firstinspires.ftc.teamcode.trajectorysequence;
 
-import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.Pose2d;
 
 import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.SequenceSegment;
 
@@ -16,7 +16,8 @@ public class TrajectorySequence {
         this.sequenceList = Collections.unmodifiableList(sequenceList);
     }
 
-    public Pose2d start() {
+    public
+    com. acmerobotics. roadrunner. Pose2d start() {
         return sequenceList.get(0).getStartPose();
     }
 
