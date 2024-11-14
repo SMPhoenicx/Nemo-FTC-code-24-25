@@ -30,6 +30,7 @@
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -79,6 +80,8 @@ public class MyOpMode extends LinearOpMode {
     private DcMotor lrm = null;
 
     private DcMotor arm = null;
+    private CRServo s1 = null;
+    private CRServo s2 = null;
 
     @Override
     public void runOpMode() {
@@ -91,19 +94,23 @@ public class MyOpMode extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "br");
         rrm = hardwareMap.get(DcMotor.class, "rrm");
         lrm = hardwareMap.get(DcMotor.class, "lrm");
-        arm = hardwareMap.get(DcMotor.class, "arm");
+        //arm = hardwareMap.get(DcMotor.class, "arm");
+        s1 = hardwareMap.get(CRServo.class, "s1");
+        s2 = hardwareMap.get(CRServo.class, "s2");
 
         //init arm motor encoder
-        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         //set motor directions
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        arm.setDirection(DcMotor.Direction.FORWARD);
+        //arm.setDirection(DcMotor.Direction.FORWARD);
         rrm.setDirection(DcMotor.Direction.FORWARD);
         lrm.setDirection(DcMotor.Direction.REVERSE);
+        s1.setDirection(DcMotorSimple.Direction.FORWARD);
+        s2.setDirection(DcMotorSimple.Direction.FORWARD);
 
         //init zero power behavior
         //arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -183,26 +190,26 @@ public class MyOpMode extends LinearOpMode {
             rrm.setPower(rmPower);
             //arm.setPower(armPower);
             //my pid code (it's also quite mid)
-            arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            double kP = 0.007;
-            double kI = 0.0;
-            double kD = 0.002;
-            double α=.8;
-            double maxIntegralError=100;
-
-            int currentPos = arm.getCurrentPosition();
-            if(position!=prevPosition) integralError=0;//reset integral error for every new target position
-            double error = position - currentPos;
-            integralError += error;
-            integralError = Math.min(Math.max(integralError, -maxIntegralError), maxIntegralError);//prevent integral error from getting too high
-            double derivativeError = error - prevError;
-            double filteredDerivativeError = α*derivativeError+(1-α)*prevDerivativeError;//IIR filter to smooth out spikes in derivative error
-            double armOutput = Math.min(Math.max(kP * error + kI * integralError + kD * filteredDerivativeError, -1.0), 1.0);
-            prevError = error;
-            prevDerivativeError = filteredDerivativeError;
-            prevPosition = position;
-
-            arm.setPower(armOutput);
+//            arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            double kP = 0.007;
+//            double kI = 0.0;
+//            double kD = 0.002;
+//            double α=.8;
+//            double maxIntegralError=100;
+//
+//            int currentPos = arm.getCurrentPosition();
+//            if(position!=prevPosition) integralError=0;//reset integral error for every new target position
+//            double error = position - currentPos;
+//            integralError += error;
+//            integralError = Math.min(Math.max(integralError, -maxIntegralError), maxIntegralError);//prevent integral error from getting too high
+//            double derivativeError = error - prevError;
+//            double filteredDerivativeError = α*derivativeError+(1-α)*prevDerivativeError;//IIR filter to smooth out spikes in derivative error
+//            double armOutput = Math.min(Math.max(kP * error + kI * integralError + kD * filteredDerivativeError, -1.0), 1.0);
+//            prevError = error;
+//            prevDerivativeError = filteredDerivativeError;
+//            prevPosition = position;
+//
+//            arm.setPower(armOutput);
 
             //built-in PID control code for arm (it's quite mid)
 //            arm.setTargetPosition(position);
@@ -210,6 +217,22 @@ public class MyOpMode extends LinearOpMode {
 //            arm.setPower(1.0);
 //
 //            int currentPos = arm.getCurrentPosition();
+            if(gamepad2.x){
+                s1.setDirection(DcMotorSimple.Direction.FORWARD);
+                s2.setDirection(DcMotorSimple.Direction.REVERSE);
+            }
+            if(gamepad2.y){
+                s1.setDirection(DcMotorSimple.Direction.REVERSE);
+                s2.setDirection(DcMotorSimple.Direction.FORWARD);
+            }
+            if(gamepad2.y || gamepad2.x){
+                s1.setPower(1.0);
+                s2.setPower(1.0);
+            }
+            else{
+                s1.setPower(0.0);
+                s2.setPower(0.0);
+            }
 
 
             // Show the elapsed game time and wheel power.
@@ -218,8 +241,8 @@ public class MyOpMode extends LinearOpMode {
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.addData("RRM Power", "%4.2f", rmPower);
             telemetry.addData("ARM Power", "%4.2f", armPower);
-            telemetry.addData("Current Position", currentPos);
-            telemetry.addData("Target Position", position);
+            //telemetry.addData("Current Position", currentPos);
+            //telemetry.addData("Target Position", position);
             telemetry.update();
         }
     }}
