@@ -225,6 +225,7 @@ public class MyOpMode extends LinearOpMode {
                 s1.setDirection(DcMotorSimple.Direction.REVERSE);
                 s2.setDirection(DcMotorSimple.Direction.FORWARD);
             }
+            //test
             if(gamepad2.y || gamepad2.x){
                 s1.setPower(1.0);
                 s2.setPower(1.0);
