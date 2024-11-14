@@ -27,10 +27,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -81,7 +83,7 @@ public class MyOpMode extends LinearOpMode {
 
     private CRServo servo1 = null;
     private CRServo servo2 = null;
-    private CRServo armLock=null;
+    private Servo armLock=null;
     @Override
     public void runOpMode() {
 
@@ -95,7 +97,8 @@ public class MyOpMode extends LinearOpMode {
         lrm = hardwareMap.get(DcMotor.class, "lrm");
         servo1 = hardwareMap.get(CRServo.class, "s1");
         servo2 = hardwareMap.get(CRServo.class, "s2");
-        armLock=hardwareMap.get(CRServo.class,"sarm");
+        armLock=hardwareMap.get(Servo.class,"sarm");
+        armLock.setPosition(1.0);
 
         //init arm motor encoder
 
@@ -106,7 +109,9 @@ public class MyOpMode extends LinearOpMode {
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         rrm.setDirection(DcMotor.Direction.FORWARD);
         lrm.setDirection(DcMotor.Direction.REVERSE);
-
+        servo1.setDirection(DcMotorSimple.Direction.FORWARD);
+        servo2.setDirection(DcMotorSimple.Direction.FORWARD);
+        armLock.setDirection(Servo.Direction.FORWARD);
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -144,6 +149,7 @@ public class MyOpMode extends LinearOpMode {
             double rightBackPower  = axial + lateral - yaw;
             double rrmPower = -gamepad2.right_stick_y;
             double lrmPower = -gamepad2.left_stick_y;
+            if(lrmPower>0) lrmPower/=2;else lrmPower/=4;
 
             //read arm encoder (higher sensitivity -> more change per joystick position)
             //position = Math.max(Math.min(position + armPower * armSensitivity, 0),-705);
@@ -153,7 +159,6 @@ public class MyOpMode extends LinearOpMode {
             int position = armPositions[step];
             lb2Pressed = gamepad2.left_bumper;
             rb2Pressed = gamepad2.right_bumper;
-            if(gamepad2.left_trigger>0) armLock.setPower(1);
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -204,12 +209,31 @@ public class MyOpMode extends LinearOpMode {
 //
 //            int currentPos = arm.getCurrentPosition();
 
-
-
+if(gamepad2.x){
+    servo1.setDirection(DcMotorSimple.Direction.FORWARD);
+    servo2.setDirection(DcMotorSimple.Direction.REVERSE);
+}
+            if(gamepad2.y){
+                servo1.setDirection(DcMotorSimple.Direction.REVERSE);
+                servo2.setDirection(DcMotorSimple.Direction.FORWARD);
+            }
+if(gamepad2.x || gamepad2.y){
+    servo1.setPower(1.0);
+    servo2.setPower(1.0);
+}
+else{
+    servo1.setPower(0.0);
+    servo2.setPower(0.0);
+}
+            if(gamepad2.left_trigger>0){
+                armLock.setPosition(1-armLock.getPosition());
+            }
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
+            telemetry.addData("axial", "%4.2f", axial);
+            telemetry.addData("lateral", "%4.2f", lateral);
             telemetry.addData("RRM Power", "%4.2f", rrmPower);
             telemetry.addData("LRM Power", "%4.2f", lrmPower);
            // telemetry.addData("Current Position", currentPos);
