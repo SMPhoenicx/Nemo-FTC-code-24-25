@@ -81,6 +81,7 @@ public class MyOpMode extends LinearOpMode {
 
     private CRServo servo1 = null;
     private CRServo servo2 = null;
+    private CRServo armLock=null;
     @Override
     public void runOpMode() {
 
@@ -94,6 +95,7 @@ public class MyOpMode extends LinearOpMode {
         lrm = hardwareMap.get(DcMotor.class, "lrm");
         servo1 = hardwareMap.get(CRServo.class, "s1");
         servo2 = hardwareMap.get(CRServo.class, "s2");
+        armLock=hardwareMap.get(CRServo.class,"AL");
 
         //init arm motor encoder
 
@@ -151,6 +153,7 @@ public class MyOpMode extends LinearOpMode {
             int position = armPositions[step];
             lb2Pressed = gamepad2.left_bumper;
             rb2Pressed = gamepad2.right_bumper;
+            if(gamepad2.left_trigger>0) armLock.setPower(1);
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
