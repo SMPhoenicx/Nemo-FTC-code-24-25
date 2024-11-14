@@ -30,6 +30,7 @@
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -78,8 +79,8 @@ public class MyOpMode extends LinearOpMode {
 
     private DcMotor lrm = null;
 
-    private DcMotor arm = null;
-
+    private CRServo servo1 = null;
+    private CRServo servo2 = null;
     @Override
     public void runOpMode() {
 
@@ -91,22 +92,18 @@ public class MyOpMode extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "br");
         rrm = hardwareMap.get(DcMotor.class, "rrm");
         lrm = hardwareMap.get(DcMotor.class, "lrm");
-        arm = hardwareMap.get(DcMotor.class, "arm");
+        servo1 = hardwareMap.get(CRServo.class, "s1");
+        servo2 = hardwareMap.get(CRServo.class, "s2");
 
         //init arm motor encoder
-        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         //set motor directions
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        arm.setDirection(DcMotor.Direction.FORWARD);
         rrm.setDirection(DcMotor.Direction.FORWARD);
         lrm.setDirection(DcMotor.Direction.REVERSE);
-
-        //init zero power behavior
-        //arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -143,14 +140,8 @@ public class MyOpMode extends LinearOpMode {
             double rightFrontPower = axial - lateral - yaw;
             double leftBackPower   = axial - lateral + yaw;
             double rightBackPower  = axial + lateral - yaw;
-            double rmPower = -gamepad2.left_stick_y;
-            double armPower = -gamepad2.right_stick_y;
-
-            //set values to 0 for very small joystick movements
-            if(leftFrontPower<threshold) leftFrontPower=0;
-            if(rightFrontPower<threshold) rightFrontPower=0;
-            if(leftBackPower<threshold) leftBackPower=0;
-            if(rightBackPower<threshold) rightBackPower=0;
+            double rrmPower = -gamepad2.right_stick_y;
+            double lrmPower = -gamepad2.left_stick_y;
 
             //read arm encoder (higher sensitivity -> more change per joystick position)
             //position = Math.max(Math.min(position + armPower * armSensitivity, 0),-705);
@@ -179,15 +170,15 @@ public class MyOpMode extends LinearOpMode {
             rightFrontDrive.setPower(rightFrontPower);
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
-            lrm.setPower(rmPower);
-            rrm.setPower(rmPower);
-            //arm.setPower(armPower);
+            lrm.setPower(lrmPower);
+            rrm.setPower(rrmPower);
             //my pid code (it's also quite mid)
-            arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            /*arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            // changing this sensitivity below to see if it reduces sensitivity
             double kP = 0.007;
             double kI = 0.0;
             double kD = 0.002;
-            double α=.8;
+            double α = .8;
             double maxIntegralError=100;
 
             int currentPos = arm.getCurrentPosition();
@@ -201,8 +192,7 @@ public class MyOpMode extends LinearOpMode {
             prevError = error;
             prevDerivativeError = filteredDerivativeError;
             prevPosition = position;
-
-            arm.setPower(armOutput);
+            arm.setPower(armOutput);*/
 
             //built-in PID control code for arm (it's quite mid)
 //            arm.setTargetPosition(position);
@@ -212,13 +202,14 @@ public class MyOpMode extends LinearOpMode {
 //            int currentPos = arm.getCurrentPosition();
 
 
+
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
-            telemetry.addData("RRM Power", "%4.2f", rmPower);
-            telemetry.addData("ARM Power", "%4.2f", armPower);
-            telemetry.addData("Current Position", currentPos);
+            telemetry.addData("RRM Power", "%4.2f", rrmPower);
+            telemetry.addData("LRM Power", "%4.2f", lrmPower);
+           // telemetry.addData("Current Position", currentPos);
             telemetry.addData("Target Position", position);
             telemetry.update();
         }
