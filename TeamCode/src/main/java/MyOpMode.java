@@ -153,8 +153,15 @@ public class MyOpMode extends LinearOpMode {
             double rightBackPower  = axial + lateral - yaw;
             double rrmPower = gamepad2.right_stick_y;
             double lrmPower = -gamepad2.left_stick_y;
-            if(lrmPower>0) lrmPower/=2;else lrmPower/=4;
 
+            if(!gamepad2.left_bumper) {
+                if (lrmPower > 0) lrmPower /= 2;
+                else lrmPower /= 4;
+            }
+            else{
+                if (lrmPower > 0) lrmPower *= 0.75;
+                else lrmPower *= 1;
+            }
             //read arm encoder (higher sensitivity -> more change per joystick position)
             //position = Math.max(Math.min(position + armPower * armSensitivity, 0),-705);
             if(gamepad2.left_bumper && !lb2Pressed){step++;}
