@@ -170,7 +170,7 @@ public class MyOpMode extends LinearOpMode {
                 if(runtime.milliseconds() - doublePressStartTime < 500){
                     //lock down
                     armLock.setPosition(ARMUNLOCKED_POSITION);
-                    lrm.setPower(0.2);
+                    lrm.setPower(-1.0);
                     sleep(4000);
                     lrm.setPower(0.0);
                     break;
