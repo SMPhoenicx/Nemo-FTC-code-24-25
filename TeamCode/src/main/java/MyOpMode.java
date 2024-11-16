@@ -143,7 +143,7 @@ public class MyOpMode extends LinearOpMode {
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
+            double yaw     =  gamepad1.right_stick_x * 0.5;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
@@ -151,7 +151,7 @@ public class MyOpMode extends LinearOpMode {
             double rightFrontPower = axial - lateral - yaw;
             double leftBackPower   = axial - lateral + yaw;
             double rightBackPower  = axial + lateral - yaw;
-            double rrmPower = -gamepad2.right_stick_y;
+            double rrmPower = gamepad2.right_stick_y;
             double lrmPower = -gamepad2.left_stick_y;
             if(lrmPower>0) lrmPower/=2;else lrmPower/=4;
 
