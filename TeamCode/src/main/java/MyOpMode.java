@@ -129,6 +129,8 @@ public class MyOpMode extends LinearOpMode {
         boolean lb2Pressed = false;
         boolean rb2Pressed = false;
 
+        double doublePressStartTime = 0;
+
         //for my pid code
         double prevError = 0.0;
         double prevDerivativeError = 0.0;
@@ -162,6 +164,21 @@ public class MyOpMode extends LinearOpMode {
                 if (lrmPower > 0) lrmPower *= 0.75;
                 else lrmPower *= 1;
             }
+
+            if(gamepad2.right_bumper && !rb2Pressed){
+                //just don't press it in the first 500ms
+                if(runtime.milliseconds() - doublePressStartTime < 500){
+                    //lock down
+                    lrm.setPower(1.0);
+                    sleep(1000);
+                    armLock.setPosition(ARMLOCKED_POSITION);
+                    break;
+                }
+                else{
+                    doublePressStartTime = runtime.milliseconds();
+                }
+            }
+
             //read arm encoder (higher sensitivity -> more change per joystick position)
             //position = Math.max(Math.min(position + armPower * armSensitivity, 0),-705);
             if(gamepad2.left_bumper && !lb2Pressed){step++;}
