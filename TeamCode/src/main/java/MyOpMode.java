@@ -84,6 +84,9 @@ public class MyOpMode extends LinearOpMode {
     private CRServo servo1 = null;
     private CRServo servo2 = null;
     private Servo armLock=null;
+
+    private final double ARMLOCKED_POSITION = 1;
+    private final double ARMUNLOCKED_POSITION = 0;
     @Override
     public void runOpMode() {
 
@@ -98,8 +101,7 @@ public class MyOpMode extends LinearOpMode {
         servo1 = hardwareMap.get(CRServo.class, "s1");
         servo2 = hardwareMap.get(CRServo.class, "s2");
         armLock=hardwareMap.get(Servo.class,"sarm");
-        armLock.setPosition(1.0);
-
+        //armLock.setPosition(ARMUNLOCKED_POSITION);
         //init arm motor encoder
 
         //set motor directions
@@ -111,7 +113,9 @@ public class MyOpMode extends LinearOpMode {
         lrm.setDirection(DcMotor.Direction.REVERSE);
         servo1.setDirection(DcMotorSimple.Direction.FORWARD);
         servo2.setDirection(DcMotorSimple.Direction.FORWARD);
-        armLock.setDirection(Servo.Direction.FORWARD);
+        armLock.setDirection(Servo.Direction.REVERSE);
+        armLock.setPosition(0);
+
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -180,6 +184,7 @@ public class MyOpMode extends LinearOpMode {
             rightBackDrive.setPower(rightBackPower);
             lrm.setPower(lrmPower);
             rrm.setPower(rrmPower);
+            //armLock.setPosition(-lrmPower);
             //my pid code (it's also quite mid)
             /*arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             // changing this sensitivity below to see if it reduces sensitivity
@@ -224,10 +229,19 @@ if(gamepad2.x || gamepad2.y){
 else{
     servo1.setPower(0.0);
     servo2.setPower(0.0);
+
+
 }
-            if(gamepad2.left_trigger>0){
-                armLock.setPosition(1-armLock.getPosition());
+
+            //unlock when arm is moving
+            if(lrmPower != -0 && armLock.getPosition() != ARMUNLOCKED_POSITION){
+                armLock.setPosition(ARMUNLOCKED_POSITION);
             }
+            //lock when arm is not moving
+            else if (lrmPower == 0 && armLock.getPosition() != ARMLOCKED_POSITION){
+                armLock.setPosition(ARMLOCKED_POSITION);
+            }
+
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
@@ -236,6 +250,7 @@ else{
             telemetry.addData("lateral", "%4.2f", lateral);
             telemetry.addData("RRM Power", "%4.2f", rrmPower);
             telemetry.addData("LRM Power", "%4.2f", lrmPower);
+            telemetry.addData("SERVO POS","%4.2f", armLock.getPosition());
            // telemetry.addData("Current Position", currentPos);
             telemetry.addData("Target Position", position);
             telemetry.update();
