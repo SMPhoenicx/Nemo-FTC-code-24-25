@@ -164,14 +164,15 @@ public class MyOpMode extends LinearOpMode {
                 if (lrmPower > 0) lrmPower *= 0.75;
                 else lrmPower *= 1;
             }
-
+            //ENDGAME STOP
             if(gamepad2.right_bumper && !rb2Pressed){
                 //just don't press it in the first 500ms
                 if(runtime.milliseconds() - doublePressStartTime < 500){
                     //lock down
-                    lrm.setPower(1.0);
-                    sleep(1000);
-                    armLock.setPosition(ARMLOCKED_POSITION);
+                    armLock.setPosition(ARMUNLOCKED_POSITION);
+                    lrm.setPower(0.2);
+                    sleep(4000);
+                    lrm.setPower(0.0);
                     break;
                 }
                 else{
