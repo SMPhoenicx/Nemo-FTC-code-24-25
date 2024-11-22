@@ -114,7 +114,7 @@ public class MyOpMode extends LinearOpMode {
         rext.setDirection(DcMotor.Direction.FORWARD);
         lext.setDirection(DcMotor.Direction.REVERSE);
         rpivot.setDirection(DcMotor.Direction.FORWARD);
-        lpivot.setDirection(DcMotor.Direction.REVERSE);
+        lpivot.setDirection(DcMotor.Direction.FORWARD);
         servo1.setDirection(DcMotorSimple.Direction.FORWARD);
         servo2.setDirection(DcMotorSimple.Direction.FORWARD);
         armLock.setDirection(Servo.Direction.REVERSE);
@@ -161,13 +161,12 @@ public class MyOpMode extends LinearOpMode {
             double extPower = -gamepad2.left_stick_y;
 
             if(!gamepad2.left_bumper) {
-                if (extPower > 0) extPower /= 2;
-                else extPower /= 4;
+                extPower /= 2;
             }
-            else{
-                if (extPower > 0) extPower *= 0.75;
-                else extPower *= 1;
-            }
+//            else{
+//                if (extPower > 0) extPower *= 0.75;
+//                else extPower *= 1;
+//            }
             //ENDGAME STOP
             if(gamepad2.right_bumper && !rb2Pressed){
                 //just don't press it in the first 500ms
