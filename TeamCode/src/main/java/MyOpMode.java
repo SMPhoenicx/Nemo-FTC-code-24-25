@@ -27,8 +27,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -77,10 +75,12 @@ public class MyOpMode extends LinearOpMode {
     private DcMotor rightBackDrive = null;
 
     //landon asked me to code the following 3 motors (i don't know what they do)
-    private DcMotor rrm = null;
+    private DcMotor rext = null;
 
-    private DcMotor lrm = null;
+    private DcMotor lext = null;
+    private DcMotor rpivot = null;
 
+    private DcMotor lpivot = null;
     private CRServo servo1 = null;
     private CRServo servo2 = null;
     private Servo armLock=null;
@@ -96,8 +96,10 @@ public class MyOpMode extends LinearOpMode {
         leftBackDrive  = hardwareMap.get(DcMotor.class, "bl");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "fr");
         rightBackDrive = hardwareMap.get(DcMotor.class, "br");
-        rrm = hardwareMap.get(DcMotor.class, "rrm");
-        lrm = hardwareMap.get(DcMotor.class, "lrm");
+        rext = hardwareMap.get(DcMotor.class, "rext");
+        lext = hardwareMap.get(DcMotor.class, "lext");
+        rpivot = hardwareMap.get(DcMotor.class, "rpivot");
+        lpivot = hardwareMap.get(DcMotor.class, "lpivot");
         servo1 = hardwareMap.get(CRServo.class, "s1");
         servo2 = hardwareMap.get(CRServo.class, "s2");
         armLock=hardwareMap.get(Servo.class,"sarm");
@@ -109,8 +111,10 @@ public class MyOpMode extends LinearOpMode {
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rrm.setDirection(DcMotor.Direction.FORWARD);
-        lrm.setDirection(DcMotor.Direction.REVERSE);
+        rext.setDirection(DcMotor.Direction.FORWARD);
+        lext.setDirection(DcMotor.Direction.REVERSE);
+        rpivot.setDirection(DcMotor.Direction.FORWARD);
+        lpivot.setDirection(DcMotor.Direction.REVERSE);
         servo1.setDirection(DcMotorSimple.Direction.FORWARD);
         servo2.setDirection(DcMotorSimple.Direction.FORWARD);
         armLock.setDirection(Servo.Direction.REVERSE);
@@ -153,16 +157,16 @@ public class MyOpMode extends LinearOpMode {
             double rightFrontPower = axial - lateral - yaw;
             double leftBackPower   = axial - lateral + yaw;
             double rightBackPower  = axial + lateral - yaw;
-            double rrmPower = gamepad2.right_stick_y;
-            double lrmPower = -gamepad2.left_stick_y;
+            double pivotPower = gamepad2.right_stick_y;
+            double extPower = -gamepad2.left_stick_y;
 
             if(!gamepad2.left_bumper) {
-                if (lrmPower > 0) lrmPower /= 2;
-                else lrmPower /= 4;
+                if (extPower > 0) extPower /= 2;
+                else extPower /= 4;
             }
             else{
-                if (lrmPower > 0) lrmPower *= 0.75;
-                else lrmPower *= 1;
+                if (extPower > 0) extPower *= 0.75;
+                else extPower *= 1;
             }
             //ENDGAME STOP
             if(gamepad2.right_bumper && !rb2Pressed){
@@ -170,9 +174,11 @@ public class MyOpMode extends LinearOpMode {
                 if(runtime.milliseconds() - doublePressStartTime < 500){
                     //lock down
                     armLock.setPosition(ARMUNLOCKED_POSITION);
-                    lrm.setPower(-1.0);
+                    lext.setPower(-1.0);
+                    rext.setPower(-1.0);
                     sleep(4000);
-                    lrm.setPower(0.0);
+                    lext.setPower(0.0);
+                    rext.setPower(0.0);
                     break;
                 }
                 else{
@@ -207,8 +213,10 @@ public class MyOpMode extends LinearOpMode {
             rightFrontDrive.setPower(rightFrontPower);
             leftBackDrive.setPower(leftBackPower);
             rightBackDrive.setPower(rightBackPower);
-            lrm.setPower(lrmPower);
-            rrm.setPower(rrmPower);
+            lext.setPower(extPower);
+            rext.setPower(extPower);
+            lpivot.setPower(pivotPower);
+            rpivot.setPower(pivotPower);
             //armLock.setPosition(-lrmPower);
             //my pid code (it's also quite mid)
             /*arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -259,11 +267,11 @@ else{
 }
 
             //unlock when arm is moving
-            if(lrmPower != -0 && armLock.getPosition() != ARMUNLOCKED_POSITION){
+            if(extPower != -0 && armLock.getPosition() != ARMUNLOCKED_POSITION){
                 armLock.setPosition(ARMUNLOCKED_POSITION);
             }
             //lock when arm is not moving
-            else if (lrmPower == 0 && armLock.getPosition() != ARMLOCKED_POSITION){
+            else if (extPower == 0 && armLock.getPosition() != ARMLOCKED_POSITION){
                 armLock.setPosition(ARMLOCKED_POSITION);
             }
 
@@ -273,8 +281,8 @@ else{
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.addData("axial", "%4.2f", axial);
             telemetry.addData("lateral", "%4.2f", lateral);
-            telemetry.addData("RRM Power", "%4.2f", rrmPower);
-            telemetry.addData("LRM Power", "%4.2f", lrmPower);
+            telemetry.addData("Pivot Power", "%4.2f", pivotPower);
+            telemetry.addData("Ext Power", "%4.2f", extPower);
             telemetry.addData("SERVO POS","%4.2f", armLock.getPosition());
            // telemetry.addData("Current Position", currentPos);
             telemetry.addData("Target Position", position);
