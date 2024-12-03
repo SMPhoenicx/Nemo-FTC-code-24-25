@@ -160,9 +160,9 @@ public class MyOpMode extends LinearOpMode {
             double pivotPower = gamepad2.right_stick_y;
             double extPower = -gamepad2.left_stick_y;
 
-            if(!gamepad2.left_bumper) {
-                extPower /= 2;
-            }
+//            if(!gamepad2.left_bumper) {
+//                extPower /= 2;
+//            }
 //            else{
 //                if (extPower > 0) extPower *= 0.75;
 //                else extPower *= 1;
