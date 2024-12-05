@@ -115,7 +115,7 @@ public class MyOpMode extends LinearOpMode {
         servo1.setDirection(DcMotorSimple.Direction.FORWARD);
         servo2.setDirection(DcMotorSimple.Direction.FORWARD);
         sWrist.setDirection(Servo.Direction.FORWARD);
-        sWrist.setPosition(0.45);
+        sWrist.setPosition(0.5);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -129,10 +129,12 @@ public class MyOpMode extends LinearOpMode {
         //input states
         boolean lb2Pressed = false;
         boolean rb2Pressed = false;
+        boolean b2Pressed = false;
 
         double doublePressStartTime = 0;
         double wristPosition = 0;
-        double wristSpeedTime = 0;
+        double wristStartTime = 0;
+        double wristSpeed = 0.7;
 
         //for my pid code
         double prevError = 0.0;
@@ -160,10 +162,9 @@ public class MyOpMode extends LinearOpMode {
             double pivotPower = -gamepad2.right_stick_y;
             double extPower = gamepad2.left_stick_y;
             double wristPower = gamepad2.right_trigger - gamepad2.left_trigger;
-            double wristSpeed = 0.5; //percent of 355 degrees per seconds
-            wristPosition += wristSpeed * wristPower * (runtime.seconds() - wristSpeedTime);
-            wristPosition = Math.max(Math.min(wristPosition, 0.7), 0.45);
-            wristSpeedTime = runtime.seconds();
+            wristPosition += wristPower * wristSpeed * (runtime.seconds() - wristStartTime);
+            wristStartTime = runtime.seconds();
+            wristPosition = Math.min(Math.max(0.5, wristPosition), 0.7);
 //            if(!gamepad2.left_bumper) {
 //                extPower /= 2;
 //            }
@@ -277,8 +278,8 @@ else{
             telemetry.addData("lateral", "%4.2f", lateral);
             telemetry.addData("Pivot Power", "%4.2f", pivotPower);
             telemetry.addData("Ext Power", "%4.2f", extPower);
-            telemetry.addData("Wrist Position", wristPosition);
             telemetry.addData("Target Position", position);
+            telemetry.addData("Wrist Position", "%4.2f", wristPosition);
             telemetry.update();
         }
     }}
