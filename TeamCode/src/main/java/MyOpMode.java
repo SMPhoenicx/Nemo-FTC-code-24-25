@@ -83,10 +83,7 @@ public class MyOpMode extends LinearOpMode {
     private DcMotor lpivot = null;
     private CRServo servo1 = null;
     private CRServo servo2 = null;
-    private Servo armLock=null;
-
-    private final double ARMLOCKED_POSITION = 1;
-    private final double ARMUNLOCKED_POSITION = 0;
+    private Servo sWrist = null;
     @Override
     public void runOpMode() {
 
@@ -102,7 +99,7 @@ public class MyOpMode extends LinearOpMode {
         lpivot = hardwareMap.get(DcMotor.class, "lpivot");
         servo1 = hardwareMap.get(CRServo.class, "s1");
         servo2 = hardwareMap.get(CRServo.class, "s2");
-        armLock=hardwareMap.get(Servo.class,"sarm");
+        sWrist = hardwareMap.get(Servo.class, "sWrist");
         //armLock.setPosition(ARMUNLOCKED_POSITION);
         //init arm motor encoder
 
@@ -117,8 +114,8 @@ public class MyOpMode extends LinearOpMode {
         lpivot.setDirection(DcMotor.Direction.FORWARD);
         servo1.setDirection(DcMotorSimple.Direction.FORWARD);
         servo2.setDirection(DcMotorSimple.Direction.FORWARD);
-        armLock.setDirection(Servo.Direction.REVERSE);
-        armLock.setPosition(0);
+        sWrist.setDirection(Servo.Direction.FORWARD);
+        sWrist.setPosition(0.45);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -134,12 +131,15 @@ public class MyOpMode extends LinearOpMode {
         boolean rb2Pressed = false;
 
         double doublePressStartTime = 0;
+        double wristPosition = 0;
+        double wristSpeedTime = 0;
 
         //for my pid code
         double prevError = 0.0;
         double prevDerivativeError = 0.0;
         int prevPosition = armPositions[step];
         double integralError = 0.0;
+
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -157,9 +157,13 @@ public class MyOpMode extends LinearOpMode {
             double rightFrontPower = axial - lateral - yaw;
             double leftBackPower   = axial - lateral + yaw;
             double rightBackPower  = axial + lateral - yaw;
-            double pivotPower = gamepad2.right_stick_y;
-            double extPower = -gamepad2.left_stick_y;
-
+            double pivotPower = -gamepad2.right_stick_y;
+            double extPower = gamepad2.left_stick_y;
+            double wristPower = gamepad2.right_trigger - gamepad2.left_trigger;
+            double wristSpeed = 0.5; //percent of 355 degrees per seconds
+            wristPosition += wristSpeed * wristPower * (runtime.seconds() - wristSpeedTime);
+            wristPosition = Math.max(Math.min(wristPosition, 0.7), 0.45);
+            wristSpeedTime = runtime.seconds();
 //            if(!gamepad2.left_bumper) {
 //                extPower /= 2;
 //            }
@@ -172,7 +176,6 @@ public class MyOpMode extends LinearOpMode {
                 //just don't press it in the first 500ms
                 if(runtime.milliseconds() - doublePressStartTime < 500){
                     //lock down
-                    armLock.setPosition(ARMUNLOCKED_POSITION);
                     lext.setPower(-1.0);
                     rext.setPower(-1.0);
                     sleep(4000);
@@ -216,6 +219,7 @@ public class MyOpMode extends LinearOpMode {
             rext.setPower(extPower);
             lpivot.setPower(pivotPower);
             rpivot.setPower(pivotPower);
+            sWrist.setPosition(wristPosition);
             //armLock.setPosition(-lrmPower);
             //my pid code (it's also quite mid)
             /*arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -265,15 +269,6 @@ else{
 
 }
 
-            //unlock when arm is moving
-            if(extPower != -0 && armLock.getPosition() != ARMUNLOCKED_POSITION){
-                armLock.setPosition(ARMUNLOCKED_POSITION);
-            }
-            //lock when arm is not moving
-            else if (extPower == 0 && armLock.getPosition() != ARMLOCKED_POSITION){
-                armLock.setPosition(ARMLOCKED_POSITION);
-            }
-
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Ayaan Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
@@ -282,8 +277,7 @@ else{
             telemetry.addData("lateral", "%4.2f", lateral);
             telemetry.addData("Pivot Power", "%4.2f", pivotPower);
             telemetry.addData("Ext Power", "%4.2f", extPower);
-            telemetry.addData("SERVO POS","%4.2f", armLock.getPosition());
-           // telemetry.addData("Current Position", currentPos);
+            telemetry.addData("Wrist Position", wristPosition);
             telemetry.addData("Target Position", position);
             telemetry.update();
         }
