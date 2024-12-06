@@ -117,6 +117,12 @@ public class MyOpMode extends LinearOpMode {
         sWrist.setDirection(Servo.Direction.FORWARD);
         sWrist.setPosition(0.5);
 
+        lext.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the motor encoder
+        lext.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Turn the motor back on when we are done
+        lpivot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset the motor encoder
+        lpivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Turn the motor back on when we are done
+
+
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -161,6 +167,12 @@ public class MyOpMode extends LinearOpMode {
             double rightBackPower  = axial + lateral - yaw;
             double pivotPower = -gamepad2.right_stick_y;
             double extPower = gamepad2.left_stick_y;
+            //software horizontal extension limit
+            int pivotTicks = lpivot.getCurrentPosition();
+            double pivotAngle = (pivotTicks - 500) / 1300.0 * 45.0;
+            if(lext.getCurrentPosition() * Math.cos(pivotAngle / 180.0 * Math.PI) < -5386) extPower = Math.max(0, extPower);
+            if(pivotTicks > 2600) pivotPower = Math.min(0, pivotPower);
+
             double wristPower = gamepad2.right_trigger - gamepad2.left_trigger;
             wristPosition += wristPower * wristSpeed * (runtime.seconds() - wristStartTime);
             wristStartTime = runtime.seconds();
@@ -280,6 +292,8 @@ else{
             telemetry.addData("Ext Power", "%4.2f", extPower);
             telemetry.addData("Target Position", position);
             telemetry.addData("Wrist Position", "%4.2f", wristPosition);
+            telemetry.addData("Ext Ticks", lext.getCurrentPosition());
+            telemetry.addData("Pivot Ticks", lpivot.getCurrentPosition());
             telemetry.update();
         }
     }}
